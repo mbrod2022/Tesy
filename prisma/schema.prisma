@@ -1,0 +1,211 @@
+// Contract Management CRM - data model
+// See README.md for setup instructions.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum ContractStatus {
+  ACTIVE
+  PENDING
+  ON_HOLD
+  EXPIRED
+  TERMINATED
+}
+
+enum ContactType {
+  CLIENT
+  SUBCONTRACTOR
+  INTERNAL
+  OTHER
+}
+
+enum ActionItemStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+}
+
+enum HolidayType {
+  ANNUAL_LEAVE
+  SICK
+  OTHER
+}
+
+enum HolidayStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(STAFF)
+  jobTitle     String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  contractsManaged Contract[]   @relation("ContractManager")
+  meetingsCreated  Meeting[]    @relation("MeetingCreatedBy")
+  meetingsAttended Meeting[]    @relation("MeetingStaffAttendees")
+  actionItemsOwned ActionItem[] @relation("ActionItemOwner")
+  updates          Update[]     @relation("UpdateAuthor")
+  holidays         Holiday[]
+}
+
+model Contract {
+  id          String         @id @default(cuid())
+  reference   String         @unique
+  name        String
+  clientName  String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  value       Decimal?       @db.Decimal(14, 2)
+  status      ContractStatus @default(ACTIVE)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  contractManagerId String?
+  contractManager   User?   @relation("ContractManager", fields: [contractManagerId], references: [id])
+
+  externalContracts ExternalContract[]
+  contacts          ContractContact[]
+  meetings          Meeting[]
+  updates           Update[]
+  actionItems       ActionItem[]
+}
+
+model ExternalContract {
+  id           String         @id @default(cuid())
+  reference    String?
+  supplierName String
+  description  String?
+  startDate    DateTime
+  endDate      DateTime?
+  value        Decimal?       @db.Decimal(14, 2)
+  status       ContractStatus @default(ACTIVE)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  parentContractId String
+  parentContract   Contract @relation(fields: [parentContractId], references: [id], onDelete: Cascade)
+
+  @@index([parentContractId])
+}
+
+model Contact {
+  id           String      @id @default(cuid())
+  name         String
+  email        String?
+  phone        String?
+  jobTitle     String?
+  organisation String?
+  type         ContactType @default(CLIENT)
+  notes        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  contracts        ContractContact[]
+  meetingsAttended Meeting[]         @relation("MeetingContactAttendees")
+}
+
+model ContractContact {
+  contractId String
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  contactId  String
+  contact    Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  role       String?
+  createdAt  DateTime @default(now())
+
+  @@id([contractId, contactId])
+}
+
+model Meeting {
+  id          String   @id @default(cuid())
+  title       String
+  meetingDate DateTime
+  location    String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  contractId String
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  createdById String?
+  createdBy   User?   @relation("MeetingCreatedBy", fields: [createdById], references: [id])
+
+  staffAttendees   User[]       @relation("MeetingStaffAttendees")
+  contactAttendees Contact[]    @relation("MeetingContactAttendees")
+  actionItems      ActionItem[]
+
+  @@index([contractId])
+}
+
+model ActionItem {
+  id          String           @id @default(cuid())
+  description String
+  dueDate     DateTime?
+  status      ActionItemStatus @default(OPEN)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  contractId String
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  meetingId String?
+  meeting   Meeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+
+  ownerId String?
+  owner   User?   @relation("ActionItemOwner", fields: [ownerId], references: [id])
+
+  @@index([contractId])
+  @@index([meetingId])
+}
+
+model Update {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+
+  contractId String
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  authorId String?
+  author   User?   @relation("UpdateAuthor", fields: [authorId], references: [id])
+
+  @@index([contractId])
+}
+
+model Holiday {
+  id        String        @id @default(cuid())
+  startDate DateTime
+  endDate   DateTime
+  type      HolidayType   @default(ANNUAL_LEAVE)
+  status    HolidayStatus @default(REQUESTED)
+  notes     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
