@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { PageHeader, PrimaryButton, Table, Th, Td, StatusBadge, EmptyState } from "@/components/ui";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 
 export default async function ContractsPage() {
   const session = await auth();
@@ -34,7 +34,6 @@ export default async function ContractsPage() {
               <Th>Contract</Th>
               <Th>Client</Th>
               <Th>Status</Th>
-              <Th>Value</Th>
               <Th>End date</Th>
               <Th>External contracts</Th>
               <Th>Manager</Th>
@@ -55,7 +54,6 @@ export default async function ContractsPage() {
                 <Td>
                   <StatusBadge status={contract.status} />
                 </Td>
-                <Td>{formatCurrency(contract.value?.toString())}</Td>
                 <Td>{formatDate(contract.endDate)}</Td>
                 <Td>{contract._count.externalContracts}</Td>
                 <Td>{contract.contractManager?.name ?? "—"}</Td>

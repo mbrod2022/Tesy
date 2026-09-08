@@ -2,7 +2,10 @@
 
 import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
+import bcrypt from "bcryptjs";
 import { signIn, signOut } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth-helpers";
 
 export async function signOutAction() {
   await signOut({ redirectTo: "/login" });
@@ -32,4 +35,28 @@ export async function loginAction(formData: FormData) {
     }
     throw error;
   }
+}
+
+export async function changePasswordAction(
+  _prevState: unknown,
+  formData: FormData,
+) {
+  const user = await requireUser();
+  const newPassword = formData.get("newPassword")?.toString() ?? "";
+  const confirmPassword = formData.get("confirmPassword")?.toString() ?? "";
+
+  if (newPassword.length < 8) {
+    return { error: "Password must be at least 8 characters." };
+  }
+  if (newPassword !== confirmPassword) {
+    return { error: "Passwords do not match." };
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash, mustChangePassword: false },
+  });
+
+  redirect("/");
 }

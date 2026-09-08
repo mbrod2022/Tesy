@@ -47,6 +47,12 @@ export default async function DashboardLayout({
           <p className="truncate px-3 text-xs text-slate-500">
             {session.user.role}
           </p>
+          <Link
+            href="/change-password"
+            className="mt-2 block rounded-md px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          >
+            Change password
+          </Link>
           <form action={signOutAction}>
             <button
               type="submit"

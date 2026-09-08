@@ -78,16 +78,10 @@ export default async function ContractDetailPage(
       />
 
       <Card>
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
           <div>
             <p className="text-xs font-medium uppercase text-slate-500">Status</p>
             <div className="mt-1"><StatusBadge status={contract.status} /></div>
-          </div>
-          <div>
-            <p className="text-xs font-medium uppercase text-slate-500">Value</p>
-            <p className="mt-1 text-sm text-slate-900">
-              {formatCurrency(contract.value?.toString())}
-            </p>
           </div>
           <div>
             <p className="text-xs font-medium uppercase text-slate-500">Dates</p>

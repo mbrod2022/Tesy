@@ -13,7 +13,6 @@ const contractSchema = z.object({
   description: z.string().optional(),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().optional(),
-  value: z.string().optional(),
   status: z.enum(["ACTIVE", "PENDING", "ON_HOLD", "EXPIRED", "TERMINATED"]),
   contractManagerId: z.string().optional(),
 });
@@ -26,7 +25,6 @@ function parseContractForm(formData: FormData) {
     description: formData.get("description")?.toString() ?? "",
     startDate: formData.get("startDate")?.toString() ?? "",
     endDate: formData.get("endDate")?.toString() ?? "",
-    value: formData.get("value")?.toString() ?? "",
     status: formData.get("status")?.toString() ?? "ACTIVE",
     contractManagerId: formData.get("contractManagerId")?.toString() ?? "",
   };
@@ -55,7 +53,6 @@ export async function createContract(_prevState: unknown, formData: FormData) {
         description: data.description || null,
         startDate: new Date(data.startDate),
         endDate: data.endDate ? new Date(data.endDate) : null,
-        value: data.value ? data.value : null,
         status: data.status,
         contractManagerId: data.contractManagerId || null,
       },
@@ -94,7 +91,6 @@ export async function updateContract(
         description: data.description || null,
         startDate: new Date(data.startDate),
         endDate: data.endDate ? new Date(data.endDate) : null,
-        value: data.value ? data.value : null,
         status: data.status,
         contractManagerId: data.contractManagerId || null,
       },

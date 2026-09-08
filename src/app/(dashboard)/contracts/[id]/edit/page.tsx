@@ -45,7 +45,6 @@ export default async function EditContractPage(
             description: contract.description,
             startDate: toDateInputValue(contract.startDate),
             endDate: toDateInputValue(contract.endDate),
-            value: contract.value?.toString(),
             status: contract.status,
           }}
         />

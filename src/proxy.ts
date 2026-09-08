@@ -18,6 +18,14 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/", req.nextUrl.origin));
   }
 
+  if (
+    req.auth?.user.mustChangePassword &&
+    !isPublic &&
+    pathname !== "/change-password"
+  ) {
+    return NextResponse.redirect(new URL("/change-password", req.nextUrl.origin));
+  }
+
   return NextResponse.next();
 });
 

@@ -16,7 +16,6 @@ export type ContractFormValues = {
   description?: string | null;
   startDate?: string;
   endDate?: string;
-  value?: string;
   status?: string;
 };
 
@@ -89,7 +88,7 @@ export function ContractForm({
         />
       </Field>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <Field label="Start date" htmlFor="startDate">
           <TextInput
             id="startDate"
@@ -105,16 +104,6 @@ export function ContractForm({
             name="endDate"
             type="date"
             defaultValue={defaultValues?.endDate}
-          />
-        </Field>
-        <Field label="Contract value (£)" htmlFor="value">
-          <TextInput
-            id="value"
-            name="value"
-            type="number"
-            step="0.01"
-            min="0"
-            defaultValue={defaultValues?.value}
           />
         </Field>
       </div>
