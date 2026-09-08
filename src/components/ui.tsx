@@ -114,6 +114,31 @@ export function StatusBadge({ status }: { status: string }) {
   );
 }
 
+export const CONTRACT_TYPE_LABELS: Record<string, string> = {
+  COLLECTIONS: "Collections",
+  HWRC: "HWRC",
+  DEPOT_OFFICE: "Depot / Office",
+  OTHER: "Other",
+};
+
+const CONTRACT_TYPE_STYLES: Record<string, string> = {
+  COLLECTIONS: "bg-sky-100 text-sky-800",
+  HWRC: "bg-violet-100 text-violet-800",
+  DEPOT_OFFICE: "bg-teal-100 text-teal-800",
+  OTHER: "bg-slate-100 text-slate-700",
+};
+
+export function ContractTypeBadge({ type }: { type: string }) {
+  const style = CONTRACT_TYPE_STYLES[type] ?? "bg-slate-100 text-slate-700";
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${style}`}
+    >
+      {CONTRACT_TYPE_LABELS[type] ?? type}
+    </span>
+  );
+}
+
 export function Table({ children }: { children: ReactNode }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">

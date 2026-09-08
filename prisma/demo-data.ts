@@ -1,8 +1,8 @@
 /**
  * Adds a larger set of realistic pretend data on top of prisma/seed.ts,
  * modelled on waste-management IT service delivery: contracts are council
- * areas / business functions (not priced supplier deals), with linked
- * systems, contacts, meetings, updates, action items and holidays.
+ * areas / business functions (Collections, HWRC, Depot/Office, Other),
+ * with contacts, meetings, updates, action items and holidays.
  *
  * Safe to re-run - everything is upserted by a stable id/reference.
  * Usage: npm run db:demo
@@ -72,6 +72,7 @@ async function main() {
       reference: "BUCKS-COLL",
       name: "Bucks Household Collections",
       clientName: "Buckinghamshire Council",
+      type: "COLLECTIONS" as const,
       description:
         "Kerbside waste and recycling collections IT systems: in-cab devices, round optimisation, and customer contact integration.",
       startDate: new Date("2024-04-01"),
@@ -84,6 +85,7 @@ async function main() {
       reference: "BUCKS-HWRC",
       name: "Bucks HWRC",
       clientName: "Buckinghamshire Council",
+      type: "HWRC" as const,
       description:
         "Household Waste Recycling Centre sites across Buckinghamshire: site access control, weighbridge software, and reporting.",
       startDate: new Date("2024-04-01"),
@@ -96,6 +98,7 @@ async function main() {
       reference: "SUFFOLK-COLL",
       name: "Suffolk Waste Collections",
       clientName: "Suffolk County Council",
+      type: "COLLECTIONS" as const,
       description:
         "Collections rounds IT platform and driver handheld devices for the Suffolk contract area.",
       startDate: new Date("2023-09-01"),
@@ -108,6 +111,7 @@ async function main() {
       reference: "HILL-HWRC",
       name: "Hillingdon HWRC",
       clientName: "London Borough of Hillingdon",
+      type: "HWRC" as const,
       description:
         "HWRC site systems and permit/booking platform for Hillingdon residents.",
       startDate: new Date("2025-01-01"),
@@ -120,6 +124,7 @@ async function main() {
       reference: "GRP-FLEET",
       name: "Group Fleet Management System",
       clientName: "FCC Environment (internal)",
+      type: "OTHER" as const,
       description:
         "Cross-contract fleet telematics and vehicle maintenance scheduling platform used by all collection contracts.",
       startDate: new Date("2022-06-01"),
@@ -129,74 +134,22 @@ async function main() {
     },
   ];
 
-  const contracts: Record<string, Awaited<ReturnType<typeof prisma.contract.upsert>>> = {};
   for (const def of contractDefs) {
-    contracts[def.id] = await prisma.contract.upsert({
+    const fields = {
+      reference: def.reference,
+      name: def.name,
+      clientName: def.clientName,
+      type: def.type,
+      description: def.description,
+      startDate: def.startDate,
+      endDate: def.endDate,
+      status: def.status,
+      contractManagerId: def.managerId,
+    };
+    await prisma.contract.upsert({
       where: { reference: def.reference },
-      update: {},
-      create: {
-        id: def.id,
-        reference: def.reference,
-        name: def.name,
-        clientName: def.clientName,
-        description: def.description,
-        startDate: def.startDate,
-        endDate: def.endDate,
-        status: def.status,
-        contractManagerId: def.managerId,
-      },
-    });
-  }
-
-  // --- Linked systems / vendors (modelled as "external contracts" for now) ---
-  const externalContractDefs = [
-    {
-      id: "demo-ext-bartec",
-      contractId: "demo-contract-bucks-collections",
-      supplierName: "Bartec Municipal (Collective+)",
-      description: "In-cab collection technology and round optimisation software.",
-      startDate: new Date("2024-04-01"),
-      endDate: new Date("2027-03-31"),
-    },
-    {
-      id: "demo-ext-hwrc-weighbridge",
-      contractId: "demo-contract-bucks-hwrc",
-      supplierName: "Compucare Weighbridge Systems",
-      description: "Weighbridge software and site scales maintenance.",
-      startDate: new Date("2024-04-01"),
-      endDate: new Date("2027-03-31"),
-    },
-    {
-      id: "demo-ext-suffolk-telematics",
-      contractId: "demo-contract-suffolk-collections",
-      supplierName: "Yotta Alloy",
-      description: "Fleet routing and telematics integration for Suffolk rounds.",
-      startDate: new Date("2023-09-01"),
-      endDate: new Date("2026-08-31"),
-    },
-    {
-      id: "demo-ext-hillingdon-booking",
-      contractId: "demo-contract-hillingdon-hwrc",
-      supplierName: "SiteAssist Booking Platform",
-      description: "Resident HWRC visit booking and van permit system.",
-      startDate: new Date("2025-01-01"),
-      endDate: null,
-    },
-  ];
-
-  for (const def of externalContractDefs) {
-    await prisma.externalContract.upsert({
-      where: { id: def.id },
-      update: {},
-      create: {
-        id: def.id,
-        parentContractId: def.contractId,
-        supplierName: def.supplierName,
-        description: def.description,
-        startDate: def.startDate,
-        endDate: def.endDate,
-        status: "ACTIVE",
-      },
+      update: fields,
+      create: { id: def.id, ...fields },
     });
   }
 

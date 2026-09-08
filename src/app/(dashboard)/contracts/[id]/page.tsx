@@ -8,16 +8,12 @@ import {
   PrimaryButton,
   SecondaryLink,
   StatusBadge,
+  ContractTypeBadge,
   EmptyState,
 } from "@/components/ui";
 import { Field, TextInput, TextArea, Select } from "@/components/form";
-import { formatCurrency, formatDate, formatDateTime } from "@/lib/format";
-import {
-  addExternalContract,
-  deleteExternalContract,
-  linkContact,
-  unlinkContact,
-} from "@/lib/actions/contracts";
+import { formatDate, formatDateTime } from "@/lib/format";
+import { linkContact, unlinkContact } from "@/lib/actions/contracts";
 import { createMeeting, deleteMeeting } from "@/lib/actions/meetings";
 import { createUpdate, deleteUpdate } from "@/lib/actions/updates";
 import { createActionItem, deleteActionItem } from "@/lib/actions/action-items";
@@ -35,7 +31,6 @@ export default async function ContractDetailPage(
       where: { id },
       include: {
         contractManager: true,
-        externalContracts: { orderBy: { createdAt: "desc" } },
         contacts: { include: { contact: true }, orderBy: { createdAt: "asc" } },
         meetings: {
           orderBy: { meetingDate: "desc" },
@@ -57,7 +52,6 @@ export default async function ContractDetailPage(
   const linkedContactIds = new Set(contract.contacts.map((c) => c.contactId));
   const availableContacts = allContacts.filter((c) => !linkedContactIds.has(c.id));
 
-  const boundAddExternalContract = addExternalContract.bind(null, contract.id);
   const boundLinkContact = linkContact.bind(null, contract.id);
   const boundCreateMeeting = createMeeting.bind(null, contract.id);
   const boundCreateUpdate = createUpdate.bind(null, contract.id);
@@ -78,10 +72,14 @@ export default async function ContractDetailPage(
       />
 
       <Card>
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
           <div>
             <p className="text-xs font-medium uppercase text-slate-500">Status</p>
             <div className="mt-1"><StatusBadge status={contract.status} /></div>
+          </div>
+          <div>
+            <p className="text-xs font-medium uppercase text-slate-500">Type</p>
+            <div className="mt-1"><ContractTypeBadge type={contract.type} /></div>
           </div>
           <div>
             <p className="text-xs font-medium uppercase text-slate-500">Dates</p>
@@ -102,94 +100,6 @@ export default async function ContractDetailPage(
           </p>
         )}
       </Card>
-
-      {/* External contracts */}
-      <section>
-        <h2 className="mb-3 text-lg font-semibold text-slate-900">
-          External / subcontractor contracts
-        </h2>
-        <div className="space-y-3">
-          {contract.externalContracts.length === 0 ? (
-            <EmptyState message="No external contracts linked to this contract yet." />
-          ) : (
-            contract.externalContracts.map((ec) => (
-              <Card key={ec.id} className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-slate-900">
-                    {ec.supplierName}
-                    {ec.reference && (
-                      <span className="ml-2 font-mono text-xs text-slate-500">
-                        {ec.reference}
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    {formatDate(ec.startDate)} – {formatDate(ec.endDate)} ·{" "}
-                    {formatCurrency(ec.value?.toString())}
-                  </p>
-                  {ec.description && (
-                    <p className="mt-1 text-sm text-slate-600">{ec.description}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <StatusBadge status={ec.status} />
-                  {canManage && (
-                    <form
-                      action={deleteExternalContract.bind(null, contract.id, ec.id)}
-                    >
-                      <button className="text-xs font-medium text-red-600 hover:underline">
-                        Remove
-                      </button>
-                    </form>
-                  )}
-                </div>
-              </Card>
-            ))
-          )}
-
-          {canManage && (
-            <Card>
-              <p className="mb-3 text-sm font-medium text-slate-900">
-                Add an external contract
-              </p>
-              <form action={boundAddExternalContract} className="grid grid-cols-2 gap-3">
-                <Field label="Supplier name" htmlFor="supplierName">
-                  <TextInput id="supplierName" name="supplierName" required />
-                </Field>
-                <Field label="Reference" htmlFor="ecReference">
-                  <TextInput id="ecReference" name="reference" />
-                </Field>
-                <Field label="Start date" htmlFor="ecStartDate">
-                  <TextInput id="ecStartDate" name="startDate" type="date" required />
-                </Field>
-                <Field label="End date" htmlFor="ecEndDate">
-                  <TextInput id="ecEndDate" name="endDate" type="date" />
-                </Field>
-                <Field label="Value (£)" htmlFor="ecValue">
-                  <TextInput id="ecValue" name="value" type="number" step="0.01" min="0" />
-                </Field>
-                <Field label="Status" htmlFor="ecStatus">
-                  <Select id="ecStatus" name="status" defaultValue="ACTIVE">
-                    <option value="ACTIVE">Active</option>
-                    <option value="PENDING">Pending</option>
-                    <option value="ON_HOLD">On hold</option>
-                    <option value="EXPIRED">Expired</option>
-                    <option value="TERMINATED">Terminated</option>
-                  </Select>
-                </Field>
-                <div className="col-span-2">
-                  <Field label="Description" htmlFor="ecDescription">
-                    <TextArea id="ecDescription" name="description" rows={2} />
-                  </Field>
-                </div>
-                <div className="col-span-2">
-                  <PrimaryButton type="submit">Add external contract</PrimaryButton>
-                </div>
-              </form>
-            </Card>
-          )}
-        </div>
-      </section>
 
       {/* People */}
       <section>

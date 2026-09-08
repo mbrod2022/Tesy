@@ -48,60 +48,30 @@ async function main() {
     create: {
       id: "seed-client-contact",
       name: "Alex Whitfield",
-      email: "alex.whitfield@riversidecouncil.example",
+      email: "alex.whitfield@buckinghamshire.gov.uk",
       phone: "01234 567890",
-      jobTitle: "Contracts Officer",
-      organisation: "Riverside Borough Council",
+      jobTitle: "Waste Contracts Officer",
+      organisation: "Buckinghamshire Council",
       type: "CLIENT",
     },
   });
 
-  const subContact = await prisma.contact.upsert({
-    where: { id: "seed-sub-contact" },
-    update: {},
-    create: {
-      id: "seed-sub-contact",
-      name: "Priya Shah",
-      email: "priya.shah@greenscape.example",
-      phone: "01234 000111",
-      jobTitle: "Operations Manager",
-      organisation: "GreenScape Ltd",
-      type: "SUBCONTRACTOR",
-    },
-  });
-
   const contract = await prisma.contract.upsert({
-    where: { reference: "CON-2026-001" },
+    where: { reference: "BUCKS-HWRC" },
     update: {},
     create: {
-      reference: "CON-2026-001",
-      name: "Grounds Maintenance - North Region",
-      clientName: "Riverside Borough Council",
+      reference: "BUCKS-HWRC",
+      name: "Bucks HWRC",
+      clientName: "Buckinghamshire Council",
+      type: "HWRC",
       description:
-        "Full grounds maintenance service across the North Region, including seasonal planting and waste removal.",
+        "Household Waste Recycling Centre sites across Buckinghamshire: site access control, weighbridge software, and reporting.",
       startDate: new Date("2026-01-01"),
       endDate: new Date("2026-12-31"),
-      value: 480000,
       status: "ACTIVE",
       contractManagerId: manager.id,
       contacts: {
-        create: [
-          { contactId: clientContact.id, role: "Client lead" },
-          { contactId: subContact.id, role: "Subcontractor lead" },
-        ],
-      },
-      externalContracts: {
-        create: [
-          {
-            supplierName: "GreenScape Ltd",
-            reference: "SUB-2026-014",
-            description: "Grass cutting and hedge maintenance subcontract.",
-            startDate: new Date("2026-01-01"),
-            endDate: new Date("2026-12-31"),
-            value: 120000,
-            status: "ACTIVE",
-          },
-        ],
+        create: [{ contactId: clientContact.id, role: "Client lead" }],
       },
     },
   });
@@ -114,8 +84,8 @@ async function main() {
       contractId: contract.id,
       title: "Quarterly contract review",
       meetingDate: new Date("2026-09-15T10:00:00Z"),
-      location: "Riverside Council Offices",
-      notes: "Review Q3 performance and discuss winter gritting scope.",
+      location: "Buckinghamshire Council Offices",
+      notes: "Review Q3 site performance and discuss winter opening hours.",
       createdById: manager.id,
       staffAttendees: { connect: [{ id: manager.id }, { id: staff.id }] },
       contactAttendees: { connect: [{ id: clientContact.id }] },
@@ -129,9 +99,9 @@ async function main() {
       id: "seed-update-1",
       contractId: contract.id,
       authorId: staff.id,
-      title: "Autumn leaf clearance underway",
+      title: "Weighbridge software upgrade complete",
       content:
-        "Leaf clearance across all North Region sites started this week and is on schedule for completion by end of month.",
+        "All Buckinghamshire HWRC sites are now running the latest weighbridge software with no reported issues.",
     },
   });
 
@@ -141,7 +111,7 @@ async function main() {
     create: {
       id: "seed-action-1",
       contractId: contract.id,
-      description: "Send winter gritting proposal to client",
+      description: "Send winter opening hours proposal to council",
       dueDate: new Date("2026-10-01"),
       ownerId: manager.id,
       status: "OPEN",

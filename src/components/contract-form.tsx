@@ -13,11 +13,19 @@ export type ContractFormValues = {
   reference?: string;
   name?: string;
   clientName?: string;
+  type?: string;
   description?: string | null;
   startDate?: string;
   endDate?: string;
   status?: string;
 };
+
+const CONTRACT_TYPE_OPTIONS = [
+  { value: "COLLECTIONS", label: "Collections" },
+  { value: "HWRC", label: "HWRC" },
+  { value: "DEPOT_OFFICE", label: "Depot / Office" },
+  { value: "OTHER", label: "Other" },
+];
 
 export function ContractForm({
   action,
@@ -45,16 +53,16 @@ export function ContractForm({
             name="reference"
             required
             defaultValue={defaultValues?.reference}
-            placeholder="e.g. CON-2026-014"
+            placeholder="e.g. BUCKS-HWRC"
           />
         </Field>
-        <Field label="Status" htmlFor="status">
-          <Select id="status" name="status" defaultValue={defaultValues?.status ?? "ACTIVE"}>
-            <option value="ACTIVE">Active</option>
-            <option value="PENDING">Pending</option>
-            <option value="ON_HOLD">On hold</option>
-            <option value="EXPIRED">Expired</option>
-            <option value="TERMINATED">Terminated</option>
+        <Field label="Type" htmlFor="type">
+          <Select id="type" name="type" defaultValue={defaultValues?.type ?? "OTHER"}>
+            {CONTRACT_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </Select>
         </Field>
       </div>
@@ -65,7 +73,7 @@ export function ContractForm({
           name="name"
           required
           defaultValue={defaultValues?.name}
-          placeholder="e.g. Grounds Maintenance - North Region"
+          placeholder="e.g. Bucks HWRC"
         />
       </Field>
 
@@ -75,7 +83,7 @@ export function ContractForm({
           name="clientName"
           required
           defaultValue={defaultValues?.clientName}
-          placeholder="e.g. Riverside Borough Council"
+          placeholder="e.g. Buckinghamshire Council"
         />
       </Field>
 
@@ -88,7 +96,16 @@ export function ContractForm({
         />
       </Field>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
+        <Field label="Status" htmlFor="status">
+          <Select id="status" name="status" defaultValue={defaultValues?.status ?? "ACTIVE"}>
+            <option value="ACTIVE">Active</option>
+            <option value="PENDING">Pending</option>
+            <option value="ON_HOLD">On hold</option>
+            <option value="EXPIRED">Expired</option>
+            <option value="TERMINATED">Terminated</option>
+          </Select>
+        </Field>
         <Field label="Start date" htmlFor="startDate">
           <TextInput
             id="startDate"

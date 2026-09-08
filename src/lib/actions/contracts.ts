@@ -10,6 +10,7 @@ const contractSchema = z.object({
   reference: z.string().min(1, "Reference is required"),
   name: z.string().min(1, "Name is required"),
   clientName: z.string().min(1, "Client name is required"),
+  type: z.enum(["COLLECTIONS", "HWRC", "DEPOT_OFFICE", "OTHER"]),
   description: z.string().optional(),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().optional(),
@@ -22,6 +23,7 @@ function parseContractForm(formData: FormData) {
     reference: formData.get("reference")?.toString() ?? "",
     name: formData.get("name")?.toString() ?? "",
     clientName: formData.get("clientName")?.toString() ?? "",
+    type: formData.get("type")?.toString() ?? "OTHER",
     description: formData.get("description")?.toString() ?? "",
     startDate: formData.get("startDate")?.toString() ?? "",
     endDate: formData.get("endDate")?.toString() ?? "",
@@ -50,6 +52,7 @@ export async function createContract(_prevState: unknown, formData: FormData) {
         reference: data.reference,
         name: data.name,
         clientName: data.clientName,
+        type: data.type,
         description: data.description || null,
         startDate: new Date(data.startDate),
         endDate: data.endDate ? new Date(data.endDate) : null,
@@ -88,6 +91,7 @@ export async function updateContract(
         reference: data.reference,
         name: data.name,
         clientName: data.clientName,
+        type: data.type,
         description: data.description || null,
         startDate: new Date(data.startDate),
         endDate: data.endDate ? new Date(data.endDate) : null,
@@ -109,56 +113,6 @@ export async function deleteContract(contractId: string) {
   await prisma.contract.delete({ where: { id: contractId } });
   revalidatePath("/contracts");
   redirect("/contracts");
-}
-
-const externalContractSchema = z.object({
-  supplierName: z.string().min(1, "Supplier name is required"),
-  reference: z.string().optional(),
-  description: z.string().optional(),
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().optional(),
-  value: z.string().optional(),
-  status: z.enum(["ACTIVE", "PENDING", "ON_HOLD", "EXPIRED", "TERMINATED"]),
-});
-
-export async function addExternalContract(
-  contractId: string,
-  formData: FormData,
-) {
-  await requireManager();
-  const data = externalContractSchema.parse({
-    supplierName: formData.get("supplierName")?.toString() ?? "",
-    reference: formData.get("reference")?.toString() ?? "",
-    description: formData.get("description")?.toString() ?? "",
-    startDate: formData.get("startDate")?.toString() ?? "",
-    endDate: formData.get("endDate")?.toString() ?? "",
-    value: formData.get("value")?.toString() ?? "",
-    status: formData.get("status")?.toString() ?? "ACTIVE",
-  });
-
-  await prisma.externalContract.create({
-    data: {
-      parentContractId: contractId,
-      supplierName: data.supplierName,
-      reference: data.reference || null,
-      description: data.description || null,
-      startDate: new Date(data.startDate),
-      endDate: data.endDate ? new Date(data.endDate) : null,
-      value: data.value ? data.value : null,
-      status: data.status,
-    },
-  });
-
-  revalidatePath(`/contracts/${contractId}`);
-}
-
-export async function deleteExternalContract(
-  contractId: string,
-  externalContractId: string,
-) {
-  await requireManager();
-  await prisma.externalContract.delete({ where: { id: externalContractId } });
-  revalidatePath(`/contracts/${contractId}`);
 }
 
 export async function linkContact(

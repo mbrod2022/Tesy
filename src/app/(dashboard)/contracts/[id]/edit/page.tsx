@@ -42,6 +42,7 @@ export default async function EditContractPage(
             reference: contract.reference,
             name: contract.name,
             clientName: contract.clientName,
+            type: contract.type,
             description: contract.description,
             startDate: toDateInputValue(contract.startDate),
             endDate: toDateInputValue(contract.endDate),
