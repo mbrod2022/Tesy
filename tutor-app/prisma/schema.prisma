@@ -1,0 +1,114 @@
+// Local AI teaching assistant - data model.
+// Single local user, SQLite, everything persisted on disk so the tutor
+// remembers conversations and progress across restarts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Track {
+  JS_REACT
+  NODE_BACKEND
+  PYTHON
+  TOOLING
+}
+
+enum ConversationMode {
+  CHAT
+  QUIZ
+  EXERCISE
+  REVIEW
+}
+
+enum MessageRole {
+  SYSTEM
+  USER
+  ASSISTANT
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  PRACTICED
+  MASTERED
+}
+
+model Topic {
+  id          String   @id @default(cuid())
+  track       Track
+  slug        String   @unique
+  title       String
+  summary     String
+  order       Int
+  createdAt   DateTime @default(now())
+
+  progress          Progress?
+  conversations     Conversation[]
+  quizAttempts      QuizAttempt[]
+  exerciseAttempts  ExerciseAttempt[]
+}
+
+model Progress {
+  id            String         @id @default(cuid())
+  topic         Topic          @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId       String         @unique
+  status        ProgressStatus @default(NOT_STARTED)
+  bestQuizScore Int?
+  bestQuizTotal Int?
+  updatedAt     DateTime       @updatedAt
+}
+
+model Conversation {
+  id        String            @id @default(cuid())
+  title     String
+  mode      ConversationMode  @default(CHAT)
+  topic     Topic?            @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  topicId   String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  messages         Message[]
+  quizAttempts     QuizAttempt[]
+  exerciseAttempts ExerciseAttempt[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  role           MessageRole
+  content        String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+model QuizAttempt {
+  id             String        @id @default(cuid())
+  topic          Topic         @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId        String
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  conversationId String?
+  score          Int
+  total          Int
+  createdAt      DateTime      @default(now())
+}
+
+model ExerciseAttempt {
+  id             String        @id @default(cuid())
+  topic          Topic         @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId        String
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  conversationId String?
+  language       String
+  prompt         String
+  code           String
+  passed         Boolean
+  feedback       String?
+  createdAt      DateTime      @default(now())
+}
