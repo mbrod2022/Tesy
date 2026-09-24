@@ -9,11 +9,11 @@ const links = [
 
 export function NavBar() {
   return (
-    <header className="flex items-center gap-6 border-b border-[var(--border)] bg-[var(--panel)] px-6 py-3">
-      <span className="text-sm font-semibold tracking-wide text-[var(--accent)]">
+    <header className="flex items-center gap-4 overflow-x-auto border-b border-[var(--border)] bg-[var(--panel)] px-4 py-3 md:gap-6 md:px-6">
+      <span className="shrink-0 text-sm font-semibold tracking-wide text-[var(--accent)]">
         Tutor
       </span>
-      <nav className="flex gap-4 text-sm">
+      <nav className="flex shrink-0 gap-3 text-sm whitespace-nowrap md:gap-4">
         {links.map((link) => (
           <Link
             key={link.href}
