@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname),
   },
+  // Lets `npm run dev` be reached from another device on the same Wi-Fi
+  // (e.g. a phone) by its LAN IP, which Next.js otherwise blocks as a
+  // cross-origin dev request. Set ALLOWED_DEV_ORIGINS in .env to your
+  // machine's LAN IP (see .env.example). Not needed for `npm run start`.
+  allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS?.split(",") ?? [],
 };
 
 export default nextConfig;

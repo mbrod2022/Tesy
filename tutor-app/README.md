@@ -69,6 +69,50 @@ npm run dev
 
 Visit [http://localhost:3000](http://localhost:3000).
 
+## Using it from your phone
+
+The app itself has to run on a computer (that's what talks to LM Studio and
+to Pyodide/the JS sandbox needs a real browser, so a phone browser works
+fine as the *client* — it just can't be the machine hosting the server and
+the model). The UI is responsive, so it works on both the Fold's narrow
+cover screen and its larger inner screen.
+
+1. **Same Wi-Fi.** Your phone and the computer running this app need to be
+   on the same network.
+
+2. **Find your computer's LAN IP:**
+   - macOS: System Settings → Wi-Fi → Details (or `ipconfig getifaddr en0`)
+   - Windows: `ipconfig` in a terminal, look for "IPv4 Address"
+   - Linux: `hostname -I` or `ip addr`
+
+   It'll look like `192.168.x.x` or `10.x.x.x`.
+
+3. **Run in production mode** (simplest — no extra config needed):
+
+   ```bash
+   npm run build
+   npm run start:lan
+   ```
+
+   (`start:lan` just binds the server to `0.0.0.0` instead of only
+   `localhost`, so other devices on the network can reach it.)
+
+   If you'd rather keep hot-reload during development, use `npm run
+   dev:lan` instead, but first set `ALLOWED_DEV_ORIGINS` in `.env` to your
+   computer's LAN IP (Next.js blocks cross-origin dev requests by default) —
+   see the comment in `.env.example`.
+
+4. **Allow the port through your firewall** if prompted (Windows Defender
+   will usually ask the first time; macOS/Linux firewalls may need a manual
+   rule for port 3000).
+
+5. **On your Fold**, open a browser and go to `http://<that-IP>:3000` —
+   e.g. `http://192.168.1.42:3000`.
+
+You only need to expose *this* app's port. LM Studio itself stays on
+`localhost` on your computer — the Next.js server is the only thing your
+phone talks to, and it relays to LM Studio locally.
+
 ## How it's organized
 
 - **Chat** (`/`) — open-ended conversation with the tutor, optionally
@@ -101,8 +145,10 @@ src/app/api/                   Chat streaming, conversations, quiz, exercise, to
 ## Scripts
 
 - `npm run dev` — start the dev server
+- `npm run dev:lan` — dev server reachable from other devices on your Wi-Fi
 - `npm run build` — production build
 - `npm run start` — run the production build
+- `npm run start:lan` — production build reachable from other devices on your Wi-Fi
 - `npm run lint` — lint the codebase
 - `npm run db:seed` — (re-)seed curriculum topics
 - `npx prisma studio` — browse/edit the local database
